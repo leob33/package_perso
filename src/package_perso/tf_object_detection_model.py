@@ -1,12 +1,13 @@
 from pathlib import Path
 from typing import Tuple, Union, List, Dict, Any
+import json
 
 import numpy as np
 import tensorflow as tf
 import cv2
 
 
-class ObjectDetectionModel():
+class ObjectDetectionModel:
 
     def __init__(self, model_path: Path, labels_path: Path):
         self.model_path = model_path
@@ -19,9 +20,10 @@ class ObjectDetectionModel():
         return _detection_function
 
     @property
-    def _labels_list(self):
-        labels_list = open(self.labels_path).read().strip().split("\n")
-        return labels_list
+    def _labels_dict(self):
+        with open(self.labels_path) as f:
+            labels_dict = json.load(f)
+        return labels_dict
 
     def predict(self, image: np.ndarray, filter_threshold: float, draw_boxes: bool, text_size: float = 0.45) \
             -> Union[np.ndarray, List[Dict[str, Union[str, int]]]]:
@@ -71,12 +73,12 @@ class ObjectDetectionModel():
         return results
 
     def _decode_class_id_in_results(self, results_of_prediction: List[Dict[str, Any]]) \
-            -> List[Dict[str, Union[str, int]]]:
+            -> List[Dict[str, Union[str, float]]]:
 
         info = []
         if len(results_of_prediction) > 0:
             for result in results_of_prediction:
-                dic = {self._labels_list[int(result["class_id"])]: result["score"]}
+                dic = {self._labels_dict[str(result["class_id"])]: round(float(result["score"]), 2)}
                 info.append(dic)
         return info
 
@@ -108,7 +110,7 @@ class ObjectDetectionModel():
 
     def _add_class_label_to_image(self, image, results_of_prediction, xmin, ymin, text_size) -> None:
 
-        object_name = self._labels_list[int(results_of_prediction["class_id"])]
+        object_name = self._labels_dict[int(results_of_prediction["class_id"])]
         label = f'{object_name}: {int(results_of_prediction["score"] * 100)}%'
         label_size, base_line = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2)
         label_ymin = max(ymin, label_size[1] + 10)
