@@ -19,7 +19,7 @@ def test_object_detection_model_run_inference_properly_for_a_given_img_of_sangli
     image = model._prepare_input_as_required_by_model(image)
     results = model._run_inference(input_tensor_expected=image)
     results = model._parse_inference_results(*results, filter_threshold=0.9)
-    results = model._decode_class_id_in_results(results)
+    results = model._parse_results_of_prediction_to_get_humain_readable_format(results)
 
     expected = [
         {"Sanglier d'Eurasie": 0.91}
@@ -32,7 +32,7 @@ def test_object_detection_model_run_inference_properly_for_a_given_img_of_fox():
     image = model._prepare_input_as_required_by_model(image)
     results = model._run_inference(input_tensor_expected=image)
     results = model._parse_inference_results(*results, filter_threshold=0.9)
-    results = model._decode_class_id_in_results(results)
+    results = model._parse_results_of_prediction_to_get_humain_readable_format(results)
 
     expected = [
         {"Renard roux": 0.93}
@@ -45,7 +45,7 @@ def test_object_detection_model_run_inference_properly_for_a_given_img_of_martre
     image = model._prepare_input_as_required_by_model(image)
     results = model._run_inference(input_tensor_expected=image)
     results = model._parse_inference_results(*results, filter_threshold=0.5)
-    results = model._decode_class_id_in_results(results)
+    results = model._parse_results_of_prediction_to_get_humain_readable_format(results)
 
     expected = [
         {"Martre des pins": 0.9}
@@ -58,7 +58,7 @@ def test_object_detection_model_run_inference_properly_for_a_given_img_of_chevre
     image = model._prepare_input_as_required_by_model(image)
     results = model._run_inference(input_tensor_expected=image)
     results = model._parse_inference_results(*results, filter_threshold=0.5)
-    results = model._decode_class_id_in_results(results)
+    results = model._parse_results_of_prediction_to_get_humain_readable_format(results)
 
     expected = [
         {"Chevreuil Européen": 0.85},

@@ -29,14 +29,16 @@ class ObjectDetectionModel:
             -> Union[np.ndarray, List[Dict[str, Union[str, int]]]]:
 
         input_tensor_expected = self._prepare_input_as_required_by_model(image)
-        boxes, classes, scores, count = self._run_inference(input_tensor_expected)
-        results = self._parse_inference_results(boxes, classes, scores, count, filter_threshold)
+        raw_results = self._run_inference(input_tensor_expected)
+        parsed_and_filtered_results = self._parse_inference_results(*raw_results, filter_threshold)
         if draw_boxes:
-            results = self._annotate_raw_image_with_prediction_results(results, image, text_size=text_size)
+            annotated_image = self._parse_results_of_prediction_to_get_an_image_annotated(
+                parsed_and_filtered_results, image, text_size=text_size)
+            return annotated_image
         else:
-            results = self._decode_class_id_in_results(results)
-
-        return results
+            human_readable_results = self._parse_results_of_prediction_to_get_humain_readable_format(
+                parsed_and_filtered_results)
+            return human_readable_results
 
     def _prepare_input_as_required_by_model(self, image: np.ndarray) -> np.ndarray:
         return np.expand_dims(image, 0)
@@ -72,7 +74,7 @@ class ObjectDetectionModel:
 
         return results
 
-    def _decode_class_id_in_results(self, results_of_prediction: List[Dict[str, Any]]) \
+    def _parse_results_of_prediction_to_get_humain_readable_format(self, results_of_prediction: List[Dict[str, Any]]) \
             -> List[Dict[str, Union[str, float]]]:
 
         info = []
@@ -82,10 +84,10 @@ class ObjectDetectionModel:
                 info.append(dic)
         return info
 
-    def _annotate_raw_image_with_prediction_results(self,
-                                                    results_of_prediction: List[Dict[str, Any]],
-                                                    image: np.ndarray,
-                                                    text_size: float = 0.45) \
+    def _parse_results_of_prediction_to_get_an_image_annotated(self,
+                                                               results_of_prediction: List[Dict[str, Any]],
+                                                               image: np.ndarray,
+                                                               text_size: float = 0.45) \
             -> np.ndarray:
 
         if len(results_of_prediction) > 0:
@@ -97,7 +99,7 @@ class ObjectDetectionModel:
 
         return image
 
-    def _get_bounding_boxes_coordinates(self, image, result_of_prediction) -> tuple:
+    def _get_bounding_boxes_coordinates(self, image: np.ndarray, result_of_prediction: Dict[str, Any]) -> tuple:
 
         imh, imw = image.shape[0:-1]
 
@@ -108,10 +110,11 @@ class ObjectDetectionModel:
 
         return xmin, ymin, xmax, ymax
 
-    def _add_class_label_to_image(self, image, results_of_prediction, xmin, ymin, text_size) -> None:
+    def _add_class_label_to_image(self, image: np.ndarray, result_of_prediction: Dict[str, Any],
+                                  xmin: float, ymin: float, text_size: float) -> None:
 
-        object_name = self._labels_dict[int(results_of_prediction["class_id"])]
-        label = f'{object_name}: {int(results_of_prediction["score"] * 100)}%'
+        label_name = self._labels_dict[int(result_of_prediction["class_id"])]
+        label = f'{label_name}: {int(result_of_prediction["score"] * 100)}%'
         label_size, base_line = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2)
         label_ymin = max(ymin, label_size[1] + 10)
         cv2.rectangle(image, (xmin, label_ymin - label_size[1] - 10),
