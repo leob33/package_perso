@@ -1,4 +1,4 @@
-from logger_utils import create_custom_logger, log_function_call
+from src.package_perso.logger_utils import create_custom_logger, log_function_call
 
 
 def test_check_logger_return_something_in_terminal():

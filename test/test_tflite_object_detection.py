@@ -2,13 +2,13 @@ from pathlib import Path
 
 import cv2
 
-from tflite_object_detection import ObjectDetectionModelLite
+from src.package_perso.tflite_object_detection import ObjectDetectionModelLite
 
 
-def test_model_return_an_imge_with_labels():
-    model = ObjectDetectionModelLite(labels_path=Path("/Users/leo.babonnaud/lab/package_perso/models/label_map.txt"),
+def test_object_detection_model_return_an_imge_with_labels():
+    model = ObjectDetectionModelLite(labels_path=Path("/test/models/label_map.txt"),
                                      model_path=Path(
-                                     "/Users/leo.babonnaud/lab/package_perso/models/ssd_mobilenet_v2_6.tflite"))
+                                         "/test/models/ssd_mobilenet_v2_6.tflite"))
 
     for path_img in Path("data").glob("*.jpg"):
         print(path_img)
@@ -18,4 +18,4 @@ def test_model_return_an_imge_with_labels():
         cv2.waitKey()
 
 
-test_model_return_an_imge_with_labels()
+test_object_detection_model_return_an_imge_with_labels()
